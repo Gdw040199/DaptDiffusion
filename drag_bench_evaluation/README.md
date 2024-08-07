@@ -26,10 +26,8 @@ Trained LoRAs will be saved in "drag_bench_lora"
 To run dragging results of DragDiffusion on images in "drag_bench_data", simply execute "run_drag_diffusion.py".
 Results will be saved in "drag_diffusion_res".
 
-### Step 4: evaluate mean distance and similarity.
-To evaluate LPIPS score before and after dragging, execute "run_eval_similarity.py"
-To evaluate mean distance between target points and the final position of handle points (estimated by DIFT), execute "run_eval_point_matching.py"
-
+### Step 4: evaluate  similarity.
+To evaluate FID and LPIPS score before and after dragging, execute "run_eval_similarity.py"
 
 # Expand the Dataset
 Here we also provided the labeling tool used by us in the file "labeling_tool.py".
