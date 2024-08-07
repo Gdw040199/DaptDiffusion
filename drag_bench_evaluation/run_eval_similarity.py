@@ -19,37 +19,40 @@
 # evaluate similarity between images before and after dragging
 import argparse
 import os
-from einops import rearrange
-import numpy as np
+import shutil
+import tempfile
+
 import PIL
-from PIL import Image
+import clip
+import lpips
+import numpy as np
 import torch
 import torch.nn.functional as F
-import lpips
-import clip
+from PIL import Image
+from einops import rearrange
+from pytorch_fid import fid_score
 
 
-def preprocess_image(image,
-                     device):
-    image = torch.from_numpy(image).float() / 127.5 - 1 # [-1, 1]
+def preprocess_image(image, device):
+    image = torch.from_numpy(image).float() / 127.5 - 1  # Normalize to [-1, 1]
     image = rearrange(image, "h w c -> 1 c h w")
     image = image.to(device)
     return image
 
+
+def calculate_fid(source_folder, target_folder, device):
+    fid = fid_score.calculate_fid_given_paths([source_folder, target_folder], 50, device, 2048)
+    return fid
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="setting arguments")
-    parser.add_argument('--eval_root',
-        action='append',
-        help='root of dragging results for evaluation',
-        required=True)
+    parser.add_argument('--eval_root', action='append', help='root of dragging results for evaluation', required=True)
     args = parser.parse_args()
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
-    # lpip metric
     loss_fn_alex = lpips.LPIPS(net='alex').to(device)
-
-    # load clip model
     clip_model, clip_preprocess = clip.load("ViT-B/32", device=device, jit=False)
 
     all_category = [
@@ -70,28 +73,41 @@ if __name__ == '__main__':
     for target_root in args.eval_root:
         all_lpips = []
         all_clip_sim = []
+        all_fids = []
+
+        # Temporary directories to store images for FID calculation
+        temp_dir_source = tempfile.mkdtemp()
+        temp_dir_target = tempfile.mkdtemp()
+
         for cat in all_category:
-            for file_name in os.listdir(os.path.join(original_img_root, cat)):
-                if file_name == '.DS_Store':
+            category_source_path = os.path.join(original_img_root, cat)
+            category_target_path = os.path.join(target_root, cat)
+            subfolders = set(os.listdir(category_source_path)) & set(os.listdir(category_target_path))
+
+            for subfolder in subfolders:
+                source_image_path = os.path.join(category_source_path, subfolder, 'original_image.png')
+                dragged_image_path = os.path.join(category_target_path, subfolder, 'dragged_image.png')
+
+                if not os.path.exists(dragged_image_path):
                     continue
-                source_image_path = os.path.join(original_img_root, cat, file_name, 'original_image.png')
-                dragged_image_path = os.path.join(target_root, cat, file_name, 'dragged_image.png')
+
+                # Copy images to temporary directories for FID calculation
+                shutil.copy(source_image_path, temp_dir_source)
+                shutil.copy(dragged_image_path, temp_dir_target)
 
                 source_image_PIL = Image.open(source_image_path)
                 dragged_image_PIL = Image.open(dragged_image_path)
-                dragged_image_PIL = dragged_image_PIL.resize(source_image_PIL.size,PIL.Image.BILINEAR)
+                dragged_image_PIL = dragged_image_PIL.resize(source_image_PIL.size, PIL.Image.BILINEAR)
 
                 source_image = preprocess_image(np.array(source_image_PIL), device)
                 dragged_image = preprocess_image(np.array(dragged_image_PIL), device)
 
-                # compute LPIP
                 with torch.no_grad():
-                    source_image_224x224 = F.interpolate(source_image, (224,224), mode='bilinear')
-                    dragged_image_224x224 = F.interpolate(dragged_image, (224,224), mode='bilinear')
+                    source_image_224x224 = F.interpolate(source_image, (224, 224), mode='bilinear')
+                    dragged_image_224x224 = F.interpolate(dragged_image, (224, 224), mode='bilinear')
                     cur_lpips = loss_fn_alex(source_image_224x224, dragged_image_224x224)
                     all_lpips.append(cur_lpips.item())
 
-                # compute CLIP similarity
                 source_image_clip = clip_preprocess(source_image_PIL).unsqueeze(0).to(device)
                 dragged_image_clip = clip_preprocess(dragged_image_PIL).unsqueeze(0).to(device)
 
@@ -102,6 +118,16 @@ if __name__ == '__main__':
                     dragged_feature /= dragged_feature.norm(dim=-1, keepdim=True)
                     cur_clip_sim = (source_feature * dragged_feature).sum()
                     all_clip_sim.append(cur_clip_sim.cpu().numpy())
+
+        # Calculate FID for the entire category
+        fid_value = calculate_fid(temp_dir_source, temp_dir_target, device)
+        all_fids.append(fid_value)
+
+        # Cleanup temporary directories
+        shutil.rmtree(temp_dir_source)
+        shutil.rmtree(temp_dir_target)
+
         print(target_root)
-        print('avg lpips: ', np.mean(all_lpips))
-        print('avg clip sim', np.mean(all_clip_sim))
+        print('Average LPIPS: ', np.mean(all_lpips))
+        print('Average CLIP similarity: ', np.mean(all_clip_sim))
+        print('FID:', np.mean(all_fids) if all_fids else "No FID calculated due to missing images")
