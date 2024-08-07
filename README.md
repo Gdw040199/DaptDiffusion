@@ -12,12 +12,13 @@ DaptDiffusion is a diffusion model framework for image editing, which optimizes 
 This is a research project, NOT a commercial product. Users are granted the freedom to create images using this tool, but they are expected to comply with local laws and utilize it in a responsible manner. The developers do not assume any responsibility for potential misuse by users.
 
 ## News and Update
-* [July 8th] v0.0.0 Release.
-  * Implement Basic function of DragDiffusion
+* [August 8th] v0.0.0 Release.
+  * Implement Basic function of DaptDiffusion
 
 ## Installation
 
-It is recommended to run our code on a Nvidia GPU with a linux system. We have not yet tested on other configurations. Currently, it requires around 14 GB GPU memory to run our method. We will continue to optimize memory efficiency
+It is recommended to run our code on a Nvidia GPU with a linux system. Currently, it requires around 14 GB GPU memory to run our method. We will continue to optimize memory efficiency
+You can also run our code on the Windows system.
 
 To install the required libraries, simply run the following command:
 ```
@@ -25,13 +26,11 @@ conda env create -f environment.yaml
 conda activate dragdiff
 ```
 
-## Run DragDiffusion
+## Run DaptDiffusion
 To start with, in command line, run the following to start the gradio user interface:
 ```
 python3 drag_ui.py
 ```
-
-You may check our [GIF above](https://github.com/Yujun-Shi/DragDiffusion/blob/main/release-doc/asset/github_video.gif) that demonstrate the usage of UI in a step-by-step manner.
 
 Basically, it consists of the following steps:
 
