@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">DragDiffusion: Harnessing Diffusion Models for Interactive Point-based Image Editing</h1>
+  <h1 align="center">DaptDiffusion: Enhancing Pixel-Level Interactive Editing with Dense-UNet and Adam Point Update in Diffusion Models</h1>
   <p align="center">
     <strong>Dawei Guan</strong>
     &nbsp;&nbsp;
