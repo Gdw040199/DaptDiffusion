@@ -8,7 +8,7 @@
 DaptDiffusion is a diffusion model framework for image editing, which optimizes the latent space editing process based on the diffusion model by introducing the Dense-UNet feature network and the Adam point tracking method. 
 
 ## Overview of the model
-
+![Image](https://github.com/Gdw040199/DaptDiffusion/blob/main/overview.png)
 
 ## Disclaimer
 This is a research project, NOT a commercial product. Users are granted the freedom to create images using this tool, but they are expected to comply with local laws and utilize it in a responsible manner. The developers do not assume any responsibility for potential misuse by users.
