@@ -1,14 +1,14 @@
 <p align="center">
   <h1 align="center">DaptDiffusion: Enhancing Pixel-Level Interactive Editing with Dense-UNet and Adam Point Update in Diffusion Models</h1>
   <p align="center">
-    <strong>Dawei Guan</strong>
+    <strong>Dawei Guan & Wei Li</strong> 
     &nbsp;&nbsp;
   </p>
   <br>
 DaptDiffusion is a diffusion model framework for image editing, which optimizes the latent space editing process based on the diffusion model by introducing the Dense-UNet feature network and the Adam point tracking method. 
 
 ## Overview of the model
-![Image](https://github.com/Gdw040199/DaptDiffusion/blob/main/overview.png)
+![Image](https://github.com/Gdw040199/DaptDiffusion/blob/main/pipeline.png)
 
 ## Disclaimer
 This is a research project, NOT a commercial product. Users are granted the freedom to create images using this tool, but they are expected to comply with local laws and utilize it in a responsible manner. The developers do not assume any responsibility for potential misuse by users.
